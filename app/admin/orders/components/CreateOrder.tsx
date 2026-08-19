@@ -113,32 +113,36 @@ export default function CreateOrder({ master, onSuccess }: any) {
     ));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true); // FIX: Sudah diubah menggunakan fungsi state yang benar
+    setLoading(true); 
 
-    // Catatan: Karena data state mengandung titik (ex: 10.000), 
-    // kita bersihkan titiknya kembali ke angka murni sebelum dikirim ke database
-    const cleanedItems = items.map(item => ({
-      ...item,
-      totalYardOrder: bersihAngka(item.totalYardOrder).toString(),
-      totalMeterOrder: bersihAngka(item.totalMeterOrder).toString()
-    }));
+    try {
+      const cleanedItems = items.map(item => ({
+        ...item,
+        totalYardOrder: bersihAngka(item.totalYardOrder).toString(),
+        totalMeterOrder: bersihAngka(item.totalMeterOrder).toString()
+      }));
 
-    const payload = {
-      supplierId,
-      ...qcAssignments,
-      keteranganHeader,
-      items: cleanedItems
-    };
+      const payload = {
+        supplierId,
+        ...qcAssignments,
+        keteranganHeader,
+        items: cleanedItems
+      };
 
-    const res = await createFullOrder(payload);
-    if (res.success) {
-      setIsOpen(false);
-      resetForm();
-      onSuccess();
+      const res = await createFullOrder(payload);
+      if (res.success) {
+        setIsOpen(false);
+        resetForm();
+        onSuccess();
+      }
+    } catch (error) {
+      console.error("Gagal membuat order:", error);
+    } finally {
+      // Pastikan loading berhenti baik sukses maupun error!
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const resetForm = () => {
@@ -149,8 +153,8 @@ export default function CreateOrder({ master, onSuccess }: any) {
   };
 
   if (!isOpen) return (
-    <button onClick={() => setIsOpen(true)} className="bg-blue-600 hover:bg-blue-500 px-8 py-4 rounded-[2rem] font-black uppercase tracking-widest flex items-center gap-3 transition-all shadow-xl shadow-blue-600/20">
-      <PlusCircle size={20}/> New Production
+    <button onClick={() => setIsOpen(true)} className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-[2rem] font-black uppercase tracking-widest flex items-center gap-3 transition-all shadow-xl shadow-blue-600/20">
+      <PlusCircle size={20}/> Produksi Baru
     </button>
   );
 
@@ -161,10 +165,10 @@ export default function CreateOrder({ master, onSuccess }: any) {
         {/* Header Modal */}
         <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02] rounded-t-[3rem]">
           <div>
-            <h2 className="text-3xl font-black italic uppercase tracking-tighter text-blue-500">Create Batch Order</h2>
-            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">PT Dewa Sutratex II - Logistic Management</p>
+            <h2 className="text-3xl font-black italic uppercase tracking-tighter text-blue-500">Buat Order Produksi</h2>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">PT Dewa Sutratex II - Manajemen Logistik</p>
           </div>
-          <button onClick={() => setIsOpen(false)} className="w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-red-500/20 hover:text-red-500 transition-all"><X/></button>
+          <button onClick={() => setIsOpen(false)} className="w-12 h-12 flex items-center justify-center rounded-full bg-white/5 text-white hover:bg-red-500/20 hover:text-red-500 transition-all"><X/></button>
         </div>
         
         <form onSubmit={handleSubmit} className="p-8 space-y-10">
@@ -173,28 +177,35 @@ export default function CreateOrder({ master, onSuccess }: any) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div className="space-y-4">
               <label className="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                <Package size={14}/> 01. Origin & Supplier
+                <Package size={14}/> 01. Asal & Supplier
               </label>
-              <select className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl outline-none focus:border-blue-500 text-sm" value={supplierId} onChange={e => setSupplierId(e.target.value)} required>
-                <option value="" className="bg-black text-gray-500">-- Choose Supplier Entity --</option>
-                {master.suppliers.map((s:any) => <option key={s.id} value={s.id} className="bg-black">{s.namaPerusahaan}</option>)}
+              <select className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl outline-none focus:border-blue-500 text-sm text-white" value={supplierId} onChange={e => setSupplierId(e.target.value)} required>
+                <option value="" className="bg-black text-gray-400">-- Pilih Supplier --</option>
+                {master.suppliers.map((s:any) => <option key={s.id} value={s.id} className="bg-black text-white">{s.namaPerusahaan}</option>)}
               </select>
-              <textarea className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl outline-none focus:border-blue-500 text-sm h-24" placeholder="General batch notes (optional)..." value={keteranganHeader} onChange={e => setKeteranganHeader(e.target.value)} />
+              <textarea className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl outline-none focus:border-blue-500 text-sm text-white placeholder-gray-500 h-24" placeholder="Catatan produksi (opsional)..." value={keteranganHeader} onChange={e => setKeteranganHeader(e.target.value)} />
             </div>
 
             <div className="space-y-4">
               <label className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                <UserCheck size={14}/> 02. Quality Control Assignments
+                <UserCheck size={14}/> 02. Penugasan Quality Control
               </label>
               <div className="grid grid-cols-1 gap-3">
                 {[1, 2, 3].map((num) => (
-                  <select key={num} className="w-full bg-emerald-500/5 border border-emerald-500/10 p-4 rounded-2xl outline-none focus:border-emerald-500 text-xs" 
+                  <select key={num} className="w-full bg-emerald-500/5 border border-emerald-500/10 p-4 rounded-2xl outline-none focus:border-emerald-500 text-xs text-white" 
                     value={(qcAssignments as any)[`qcUserId${num}`]} 
                     onChange={e => setQcAssignments({...qcAssignments, [`qcUserId${num}`]: e.target.value})}>
-                    <option value="" className="bg-black">-- Inspector {num} (Optional) --</option>
-                    {master.inspectors.map((i:any) => (
-                      <option key={i.id} value={i.id} className="bg-black">{i.username.toUpperCase()} - {i.divisi || 'QC'}</option>
+                    <option value="" className="bg-black text-gray-400">-- Inspector {num} (Opsional) --</option>
+                    
+                    {/* HANYA TAMPILKAN USER DENGAN ROLE INSPECTOR */}
+                    {master.inspectors
+                      ?.filter((i: any) => i.role?.toLowerCase() === 'inspector')
+                      .map((i: any) => (
+                        <option key={i.id} value={i.id} className="bg-black text-white">
+                          {i.username.toUpperCase()} - {i.divisi || 'QC'}
+                        </option>
                     ))}
+
                   </select>
                 ))}
               </div>
@@ -205,14 +216,14 @@ export default function CreateOrder({ master, onSuccess }: any) {
 <div className="space-y-6">
   <div className="flex items-center justify-between border-b border-white/5 pb-4">
     <label className="text-[10px] font-black text-amber-500 uppercase tracking-[0.2em] flex items-center gap-2">
-      <Layers size={14} /> 03. Fabric Items & Specifications
+      <Layers size={14} /> 03. Item Kain & Spesifikasi
     </label>
     <button
       type="button"
       onClick={addNewItem}
-      className="text-[10px] font-black bg-white/5 hover:bg-blue-600 px-4 py-2 rounded-lg transition-all flex items-center gap-2 uppercase"
+      className="text-[10px] font-black bg-white/5 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2 uppercase"
     >
-      <PlusCircle size={14} /> Add Fabric Type
+      <PlusCircle size={14} /> Tambah Jenis Kain
     </button>
   </div>
 
@@ -239,7 +250,7 @@ export default function CreateOrder({ master, onSuccess }: any) {
                   <>
                     <img src={item.imageUrl} alt="Fabric" className="absolute inset-0 w-full h-full object-cover opacity-70" />
                     <div className="relative z-10 bg-black/60 px-2 py-1 rounded text-[8px] font-black text-white opacity-0 group-hover/img:opacity-100 transition-opacity">
-                      REPLACE
+                      GANTI
                     </div>
                   </>
                 ) : (
@@ -270,7 +281,7 @@ export default function CreateOrder({ master, onSuccess }: any) {
               {item.isAnalyzing && (
                 <div className="flex items-center justify-center gap-1 mt-1">
                   <div className="w-1 h-1 bg-blue-500 animate-pulse rounded-full" />
-                  <span className="text-[7px] font-black text-blue-500 italic uppercase">Scanning...</span>
+                  <span className="text-[7px] font-black text-blue-500 italic uppercase">Memindai...</span>
                 </div>
               )}
             </div>
@@ -283,9 +294,9 @@ export default function CreateOrder({ master, onSuccess }: any) {
                 onChange={(e) => updateItem(index, 'fabricTypeId', e.target.value)}
                 required
               >
-                <option value="" className="bg-black text-gray-500">-- Kain --</option>
+                <option value="" className="bg-black text-gray-500">-- Pilih Kain --</option>
                 {master.fabricTypes.map((ft: any) => (
-                  <option key={ft.id} value={ft.id} className="bg-black">{ft.namaKain?.toUpperCase() || "NAMA KAIN"}</option>
+                  <option key={ft.id} value={ft.id} className="bg-black text-white">{ft.namaKain?.toUpperCase() || "NAMA KAIN"}</option>
                 ))}
               </select>
             </div>
@@ -297,15 +308,15 @@ export default function CreateOrder({ master, onSuccess }: any) {
                 value={item.kategori}
                 onChange={(e) => updateItem(index, 'kategori', e.target.value as FabricKategori)}
               >
-                <option value="polosan" className="bg-black">POLOS</option>
-                <option value="printing" className="bg-black">PRINT</option>
+                <option value="polosan" className="bg-black text-white">POLOS</option>
+                <option value="printing" className="bg-black text-white">PRINT</option>
               </select>
             </div>
 
             {/* 4. Input Warna / Desain (Makan 2 Kolom) */}
             <div className="col-span-2">
               <input
-                className="w-full bg-black border border-white/10 p-4 rounded-xl text-xs outline-none focus:border-blue-500 text-white"
+                className="w-full bg-black border border-white/10 p-4 rounded-xl text-xs outline-none focus:border-blue-500 text-white placeholder-gray-500"
                 placeholder="Warna / Desain"
                 value={item.warnaAtauDesain}
                 onChange={(e) => updateItem(index, 'warnaAtauDesain', e.target.value)}
@@ -317,7 +328,7 @@ export default function CreateOrder({ master, onSuccess }: any) {
             <div className="col-span-2 relative">
               <input
                 type="text" 
-                className="w-full bg-black border border-white/10 p-4 pr-10 rounded-xl text-xs outline-none focus:border-amber-500 text-white"
+                className="w-full bg-black border border-white/10 p-4 pr-10 rounded-xl text-xs outline-none focus:border-amber-500 text-white placeholder-gray-500"
                 placeholder="Yards"
                 value={item.totalYardOrder}
                 onChange={(e) => handleYardsChange(index, e.target.value)}
@@ -330,8 +341,8 @@ export default function CreateOrder({ master, onSuccess }: any) {
             <div className="col-span-2 relative">
               <input
                 type="text" 
-                className="w-full bg-black border border-white/10 p-4 pr-10 rounded-xl text-xs outline-none focus:border-amber-500 text-white"
-                placeholder="Meters"
+                className="w-full bg-black border border-white/10 p-4 pr-10 rounded-xl text-xs outline-none focus:border-amber-500 text-white placeholder-gray-500"
+                placeholder="Meter"
                 value={item.totalMeterOrder}
                 onChange={(e) => handleMetersChange(index, e.target.value)}
                 required
@@ -354,14 +365,14 @@ export default function CreateOrder({ master, onSuccess }: any) {
           {/* BARIS INFO SPESIFIKASI TEKNIS LIVE (SUDAH DISINKRONKAN DENGAN POSTGRESQL) */}
           {fabricSpec ? (
             <div className="flex items-center gap-6 px-4 py-2 bg-blue-500/[0.03] border border-blue-500/10 rounded-xl text-[9px] font-mono tracking-wider text-slate-400">
-              <span className="text-blue-400 font-bold uppercase">📊 TECHNICAL STANDARD (ID: {fabricSpec.id}):</span>
-              <div>TARGET WIDTH: <span className="text-white font-bold">{fabricSpec.targetLebar || "-"} CM</span> (TOL: ±{fabricSpec.toleransiLebar || "0"} CM)</div>
+              <span className="text-blue-400 font-bold uppercase">📊 STANDAR TEKNIS (ID: {fabricSpec.id}):</span>
+              <div>TARGET LEBAR: <span className="text-white font-bold">{fabricSpec.targetLebar || "-"} CM</span> (TOL: ±{fabricSpec.toleransiLebar || "0"} CM)</div>
               <div className="w-px h-3 bg-white/10" />
-              <div>GSM TARGET (L-C-R): <span className="text-white font-bold">{fabricSpec.targetGsmKiri || "0"}-{fabricSpec.targetGsmTengah || "0"}-{fabricSpec.targetGsmKanan || "0"}</span> (TOL: ±{fabricSpec.toleransiGsm || "0"})</div>
+              <div>TARGET GSM (K-T-K): <span className="text-white font-bold">{fabricSpec.targetGsmKiri || "0"}-{fabricSpec.targetGsmTengah || "0"}-{fabricSpec.targetGsmKanan || "0"}</span> (TOL: ±{fabricSpec.toleransiGsm || "0"})</div>
               <div className="w-px h-3 bg-white/10" />
-              <div>MAX BOWING: <span className="text-amber-500 font-bold">{fabricSpec.maxBowing || "0"}%</span></div>
+              <div>MAKS BOWING: <span className="text-amber-500 font-bold">{fabricSpec.maxBowing || "0"}%</span></div>
               <div className="w-px h-3 bg-white/10" />
-              <div>MAX SKEWING: <span className="text-amber-500 font-bold">{fabricSpec.maxSkewing || "0"}%</span></div>
+              <div>MAKS SKEWING: <span className="text-amber-500 font-bold">{fabricSpec.maxSkewing || "0"}%</span></div>
             </div>
           ) : (
             <div className="px-4 py-2 bg-white/[0.01] rounded-xl text-[9px] font-mono text-slate-600 italic">
@@ -377,9 +388,9 @@ export default function CreateOrder({ master, onSuccess }: any) {
           {/* Submit Button */}
           <button 
             disabled={loading} 
-            className="w-full bg-blue-600 hover:bg-blue-500 py-6 rounded-[2.5rem] font-black uppercase tracking-[0.3em] text-sm transition-all shadow-2xl shadow-blue-600/30 disabled:bg-gray-800 disabled:text-gray-500 disabled:shadow-none"
+            className="w-full bg-blue-600 hover:bg-blue-500 text-white py-6 rounded-[2.5rem] font-black uppercase tracking-[0.3em] text-sm transition-all shadow-2xl shadow-blue-600/30 disabled:bg-gray-800 disabled:text-gray-500 disabled:shadow-none"
           >
-            {loading ? "COMMITTING TO DATABASE..." : "EXECUTE PRODUCTION ORDER"}
+            {loading ? "MENYIMPAN KE DATABASE..." : "PROSES ORDER PRODUKSI"}
           </button>
         </form>
       </div>

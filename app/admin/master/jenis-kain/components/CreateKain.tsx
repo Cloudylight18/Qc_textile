@@ -84,7 +84,7 @@ export default function CreateKain() {
                    <div className="grid grid-cols-2 gap-6">
                       <div className="col-span-2 grid grid-cols-2 gap-4">
                         <div className="space-y-1">
-                          <label className="text-[8px] text-slate-500 ml-2 block">Target Width (cm)</label>
+                          <label className="text-[8px] text-slate-500 ml-2 block">Target Width (Inci)</label>
                           <input name="targetLebar" type="number" step="0.1" required className="w-full bg-[#1e293b] border border-white/10 p-4 rounded-xl text-sm outline-none focus:border-blue-500" placeholder="150" />
                         </div>
                         <div className="space-y-1">
@@ -103,7 +103,7 @@ export default function CreateKain() {
                    </div>
                    <div className="mt-4 p-4 bg-blue-500/5 rounded-2xl border border-blue-500/10">
                       <p className="text-[7px] text-slate-400 leading-relaxed">
-                        Data ini akan digunakan sebagai parameter utama dalam pengecekan Quality Control (QC) otomatis pada sistem Gudang Stock PT 'A'.
+                        Data ini akan digunakan sebagai parameter utama dalam pengecekan Quality Control (QC) otomatis pada sistem aplikasi QC kain.
                       </p>
                    </div>
                 </div>

@@ -12,10 +12,9 @@ export default function CreateUser() {
   return (
     <>
       <button 
-        onClick={() => setIsOpen(true)}
-        className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 transition-all shadow-2xl shadow-blue-900/20"
-      >
-        <UserPlus className="w-4 h-4" /> Add New Staff
+      onClick={() => setIsOpen(true)}
+      className="bg-black hover:bg-gray-800 text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 transition-all shadow-2xl shadow-black/20">
+       <UserPlus className="w-4 h-4" /> Add New Staff
       </button>
 
       {isOpen && (

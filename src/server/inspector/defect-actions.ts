@@ -20,26 +20,29 @@ export interface DefectRecord {
 
 export async function getDefects(query?: string): Promise<DefectRecord[]> {
   try {
-    let data;
+    // PERBAIKAN: Bersihkan spasi kosong agar tidak error di ilike postgres
+    const cleanQuery = query?.trim();
 
-    if (query) {
-      data = await db
+    if (cleanQuery && cleanQuery.length > 0) {
+      const data = await db
         .select()
         .from(defects)
-        .where(ilike(defects.jenisDefect, `%${query}%`))
+        .where(ilike(defects.jenisDefect, `%${cleanQuery}%`))
         .orderBy(desc(defects.id));
+      return data as unknown as DefectRecord[];
     } else {
-      data = await db
+      const data = await db
         .select()
         .from(defects)
         .orderBy(desc(defects.id));
+      return data as unknown as DefectRecord[];
     }
-    return data as unknown as DefectRecord[];
   } catch (error) {
     console.error("Gagal mengambil data:", error);
     return [];
   }
 }
+
 
 export async function addManualDefect(formData: FormData) {
   try {
@@ -65,7 +68,7 @@ export async function addManualDefect(formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error("Gagal menyimpan defect manual:", error);
-    return { success: false, error: "Gagal menyimpan ke database." };
+    return { success: false, message: "Gagal menyimpan ke database." };
   }
 }
 
@@ -98,7 +101,7 @@ export async function updateDefect(id: number, formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error("Gagal mengupdate defect:", error);
-    return { success: false, error: "Gagal mengupdate data di database." };
+    return { success: false, message: "Gagal mengupdate data di database." };
   }
 }
 
@@ -110,6 +113,6 @@ export async function deleteDefect(id: number) {
     return { success: true };
   } catch (error) {
     console.error("Gagal menghapus defect:", error);
-    return { success: false, error: "Gagal menghapus data dari database." };
+    return { success: false, message: "Gagal menghapus data dari database." };
   }
 }

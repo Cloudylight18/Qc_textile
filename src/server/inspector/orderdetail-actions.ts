@@ -209,12 +209,10 @@ export async function deleteOrderAction(id: number) {
 }
 
 /**
- * 6. GET ORDER WITH INSPECTIONS (Fungsi yang ditambahkan untuk fix Error Build)
+ * 6. GET ORDER WITH INSPECTIONS
  */
 export async function getOrderWithInspections(id: number) {
   try {
-    // Mengambil data order item beserta relasi order parent dan tipe kainnya
-    // Asumsi 'id' di sini adalah orderItemId yang dilempar dari URL [id]
     const data = await db.query.orderItems.findFirst({
       where: eq(orderItems.id, id),
       with: {
@@ -246,9 +244,10 @@ export async function getInspectionsHistory(orderItemId: number) {
     return data.map((insp: any) => ({
       id: insp.id,
       rollNumber: insp.nomorPiece, 
-      yardInspected: insp.panjangYardAktual,
-      totalPoints: insp.totalPoints,
-      grade: insp.grade,
+      yardInspected: insp.panjangYardAktual || 0,
+      totalPoints: insp.totalPoints || 0,
+      grade: insp.grade || 'A',
+      tanggal: insp.tanggalInspeksi,
     }));
   } catch (error) {
     console.error("Gagal mengambil riwayat inspeksi:", error);
@@ -261,29 +260,23 @@ export async function getInspectionsHistory(orderItemId: number) {
  */
 export async function createInspectionRecord(formData: FormData) {
   try {
-    // =======================================================================
-    // 0. DEBUGGING JALUR MASUK (CEK DATA DARI FRONTEND)
-    // =======================================================================
     console.log("\n--- [DEBUG] DATA MENTAH DARI FORM FRONTEND ---");
     const rawData = Object.fromEntries(formData.entries());
     console.log(rawData);
     console.log("----------------------------------------------\n");
 
-    // 1. Ambil data utama & wajib
     const rawOrderItemId = formData.get("orderItemId");
     const rawGrade = formData.get("grade") as string;
 
     if (!rawOrderItemId) {
-      throw new Error("Gagal: orderItemId tidak ditemukan dari form!");
+      return { success: false, message: "Gagal: orderItemId tidak ditemukan dari form!" };
     }
 
     const orderItemId = parseInt(rawOrderItemId as string);
 
-    // 2. Validasi Tipe Grade
     const validGrades = ["A", "B", "C", "Reject"];
     const grade = validGrades.includes(rawGrade) ? rawGrade : "Reject"; 
 
-    // 3. Helper function untuk parsing angka dengan aman (fallback ke 0 jika kosong/NaN)
     const safeParseFloat = (key: string) => {
       const val = formData.get(key);
       if (!val) return 0;
@@ -298,7 +291,6 @@ export async function createInspectionRecord(formData: FormData) {
       return isNaN(parsed) ? 0 : parsed;
     };
 
-    // 4. Susun data yang akan diinsert (SEKARANG SUDAH LENGKAP)
     const dataToInsert = {
       orderItemId,
       nomorPiece: (formData.get("rollNumber") as string) || "",
@@ -306,11 +298,9 @@ export async function createInspectionRecord(formData: FormData) {
       grade: grade as any, 
       inspectorId: null, 
       
-      // Data Angka Utama
       panjangYardAktual: safeParseFloat("yardInspected"),
       totalPoints: safeParseInt("totalPoints"),
       
-      // Data Tambahan (Spesifikasi Aktual - Sesuaikan key string dengan atribut 'name' di Frontend)
       panjangMeterAktual: safeParseFloat("panjangMeterAktual"),
       lebarAktual: safeParseFloat("lebarAktual"),
       beratAktual: safeParseFloat("beratAktual"),
@@ -326,7 +316,6 @@ export async function createInspectionRecord(formData: FormData) {
     console.log("--- [DEBUG] DATA SIAP DI-INSERT KE DB ---");
     console.log(dataToInsert);
 
-    // 5. Eksekusi Insert
     await db.insert(inspections).values(dataToInsert);
 
     revalidatePath(`/inspector/check/${orderItemId}`);
@@ -336,20 +325,19 @@ export async function createInspectionRecord(formData: FormData) {
     console.error("\n--- DEBUG ERROR POSTGRES ---");
     
     if (error.code === '23505') {
-      console.error("Alasan: Nomor Piece Duplikat (Unique Constraint)");
-      throw new Error("Gagal: Nomor Piece ini sudah ada.");
+      return { success: false, message: "Gagal: Nomor Piece ini sudah terdaftar." };
     }
     
     if (error.code === '23502') { 
-      console.error(`Alasan: Ada kolom database yang wajib diisi (NOT NULL) tapi kosong/undefined.`);
+      return { success: false, message: "Gagal: Ada kolom database wajib (NOT NULL) yang kosong." };
     }
 
     if (error.code === '42703') {
-      console.error(`Alasan: DATABASE BELUM DI MIGRASI! Drizzle meminta kolom baru yang belum ada di Postgres.`);
+      return { success: false, message: "Gagal: Database belum dimigrasi (Kolom belum tersedia di PostgreSQL)." };
     }
     
     console.error("Pesan Error Lengkap:", error.message);
-    throw new Error(`Gagal menyimpan data: ${error.message}`);
+    return { success: false, message: `Gagal menyimpan data: ${error.message}` };
   }
 }
 
@@ -360,9 +348,10 @@ export async function deleteInspectionRecord(inspectionId: number, orderItemId: 
   try {
     await db.delete(inspections).where(eq(inspections.id, inspectionId));
     revalidatePath(`/inspector/check/${orderItemId}`);
-  } catch (error) {
+    return { success: true };
+  } catch (error: any) {
     console.error("Gagal menghapus inspeksi:", error);
-    throw new Error("Gagal menghapus data");
+    return { success: false, message: "Gagal menghapus data" };
   }
 }
 
@@ -380,18 +369,15 @@ export async function getInspectionDetail(inspectionId: number) {
 
 export async function updateInspectionRecord(inspectionId: number, payload: any) {
   try {
-    // Memisahkan defects dari payload karena disimpan terpisah
     const { defects, ...dataToUpdate } = payload;
     
     await db.update(inspections)
       .set(dataToUpdate)
       .where(eq(inspections.id, inspectionId));
 
-    // Jika Anda punya tabel terpisah untuk defect, logika updatenya taruh di sini
-
     return { success: true };
   } catch (error: any) {
     console.error("Gagal update inspeksi:", error.message);
-    throw new Error(`Gagal update data: ${error.message}`);
+    return { success: false, message: `Gagal update data: ${error.message}` };
   }
 }

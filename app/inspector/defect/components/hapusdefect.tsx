@@ -1,11 +1,11 @@
 "use client"
 
 import React, { useState } from 'react';
-import { deleteDefect } from '@/server/inspector/defect-actions';
+import { deleteDefect } from '@/server/inspector/defect-actions'; // Sesuaikan path ini
 import { Trash2 } from 'lucide-react';
 
 interface HapusDefectProps {
-  id: number; // PERBAIKAN: Ubah menjadi number
+  id: number;
 }
 
 export default function HapusDefect({ id }: HapusDefectProps) {
@@ -17,7 +17,7 @@ export default function HapusDefect({ id }: HapusDefectProps) {
       const result = await deleteDefect(id);
       
       if (!result.success) {
-        alert(result.error);
+        alert(result.message);
         setIsDeleting(false);
       }
     }

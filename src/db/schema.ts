@@ -22,6 +22,9 @@ export const users = pgTable("users", {
   password: text("password").notNull(), 
   role: roleEnum('role').notNull(),
   nama: text("nama"),
+  fotoProfil: text("foto_profil"), // Kolom baru untuk foto profil
+  lastProfileUpdate: timestamp("last_profile_update"), // Catatan tanggal update terakhir
+  updateCountToday: integer("update_count_today").default(0), // Hitungan update hari ini (maks 2x)
 });
 
 // --- 2. Tabel Suppliers ---
@@ -156,3 +159,10 @@ export const inspectionsRelations = relations(inspections, ({ one, many }) => ({
 export const defectsRelations = relations(defects, ({ one }) => ({
   inspection: one(inspections, { fields: [defects.inspectionId], references: [inspections.id] })
 }));
+
+export const knowledgeBase = pgTable("knowledge_base", {
+  id: serial("id").primaryKey(),
+  term: text("term").notNull(),
+  description: text("description").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});

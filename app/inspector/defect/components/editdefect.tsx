@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef } from 'react';
-import { updateDefect, DefectRecord } from '@/server/inspector/defect-actions';
+import { updateDefect, DefectRecord } from '@/server/inspector/defect-actions'; 
 import { Edit, X, UploadCloud } from 'lucide-react';
 
 interface EditDefectProps {
@@ -33,7 +33,6 @@ export default function EditDefect({ defect }: EditDefectProps) {
     
     const formData = new FormData(e.currentTarget);
     
-    // Pastikan kita mengirim foto jika ada preview
     if (imagePreview && imagePreview !== defect.fotoDefectUrl) {
       formData.set("fotoDefectUrl", imagePreview);
     }
@@ -71,7 +70,6 @@ export default function EditDefect({ defect }: EditDefectProps) {
             </h2>
             
             <form onSubmit={handleSubmit} className="space-y-4 text-left">
-              {/* Area Upload Gambar */}
               <div>
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">
                   Foto Defect
@@ -83,8 +81,7 @@ export default function EditDefect({ defect }: EditDefectProps) {
                   }`}
                 >
                   {imagePreview ? (
-                    // Tambahkan fallback ?? "" pada src agar aman dari TypeScript
-                    <img src={imagePreview ?? ""} alt="Preview" className="w-full h-full object-cover opacity-80" />
+                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover opacity-80" />
                   ) : (
                     <>
                       <UploadCloud size={32} className="text-slate-500" />
@@ -95,7 +92,6 @@ export default function EditDefect({ defect }: EditDefectProps) {
                 </div>
               </div>
 
-              {/* PERBAIKAN TS2322: Semua defaultValue diberi fallback ?? "" atau ?? 0 */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] text-slate-500 mb-1">Nama Defect</label>

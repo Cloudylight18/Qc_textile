@@ -1,0 +1,16 @@
+{
+  "secureRoutes": [
+    "/inspector",
+    "/inspector/tugas",
+    "/inspector/defect",
+    "/inspector/check",
+    "/admin",
+    "/admin/dashboard",
+    "/admin/users",
+    "/pimpinan",
+    "/pimpinan/dashboard",
+    "/pimpinan/report"
+  ],
+  "redirectOnFail": "/not-found",
+  "encryptionEnabled": true
+}

@@ -43,6 +43,27 @@
       "when": 1783953109002,
       "tag": "0005_melodic_stark_industries",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1784909089564,
+      "tag": "0006_lucky_dark_beast",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1784909128034,
+      "tag": "0007_smooth_skin",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1785289228946,
+      "tag": "0008_common_norrin_radd",
+      "breakpoints": true
     }
   ]
 }

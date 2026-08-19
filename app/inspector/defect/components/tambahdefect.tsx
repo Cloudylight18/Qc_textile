@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { addManualDefect } from '@/server/inspector/defect-actions';
-import { Plus, X, UploadCloud, Camera } from 'lucide-react';
+import { Plus, X, UploadCloud } from 'lucide-react';
 
 export default function TambahDefect() {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,7 +14,8 @@ export default function TambahDefect() {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        alert("Ukuran maksimal 2MB."); return;
+        alert("Ukuran maksimal 2MB."); 
+        return;
       }
       const reader = new FileReader();
       reader.onloadend = () => setImagePreview(reader.result as string);

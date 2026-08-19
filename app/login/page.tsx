@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import { useState } from "react";
 import { loginAction } from "@/server/admin/auth-actions";
 import { Eye, EyeOff, Lock, User, Loader2, ShieldCheck } from "lucide-react";
@@ -13,11 +14,20 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    const formData = new FormData(e.currentTarget);
-    const result = await loginAction(formData);
+    try {
+      const formData = new FormData(e.currentTarget);
+      const result = await loginAction(formData);
 
-    if (result?.error) {
-      setError(result.error);
+      if (result?.error) {
+        setError(result.error);
+        setLoading(false);
+      }
+    } catch (err: any) {
+      // Jika error merupakan proses redirect Next.js, biarkan berjalan
+      if (err?.digest?.includes('NEXT_REDIRECT')) {
+        return;
+      }
+      setError("Terjadi kesalahan pada server atau koneksi.");
       setLoading(false);
     }
   }
@@ -37,7 +47,7 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 mb-4 shadow-lg shadow-blue-500/20">
             <ShieldCheck className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-4xl font-black text-white tracking-tighter italic">QC SYSTEM</h1>
+          <h1 className="text-4xl font-black text-white tracking-tighter italic">QC kain App</h1>
           <p className="text-blue-400/80 text-[10px] uppercase tracking-[0.3em] font-bold mt-2">Internal Access Only</p>
         </div>
 
@@ -48,7 +58,7 @@ export default function LoginPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Input Username - Menggunakan class 'force-padding' untuk mengunci posisi */}
+          {/* Input Username */}
           <div className="relative group">
             <User className="absolute left-4 top-4 w-5 h-5 text-gray-500 group-focus-within:text-blue-500 transition-colors z-10" />
             <input 
@@ -93,11 +103,10 @@ export default function LoginPage() {
         </form>
 
         <p className="text-center text-gray-500 text-xs mt-10 tracking-wide">
-          &copy; 2026 PT Dewa Sutratex II - Quality Control System
+          &copy; 2026  Qc kain app - Quality Control System
         </p>
       </div>
 
-      {/* --- CSS FIX UNTUK MEMASTIKAN PADDING SELALU TERKUNCI --- */}
       <style jsx global>{`
         @keyframes blob {
           0% { transform: translate(0px, 0px) scale(1); }
@@ -106,12 +115,10 @@ export default function LoginPage() {
           100% { transform: translate(0px, 0px) scale(1); }
         }
 
-        /* Mengunci padding agar tidak tertimpa browser */
         .force-padding {
           padding-left: 3.5rem !important;
         }
 
-        /* Memperbaiki masalah autofill agar tidak menimpa ikon */
         input:-webkit-autofill,
         input:-webkit-autofill:hover, 
         input:-webkit-autofill:focus {
